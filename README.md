@@ -51,8 +51,6 @@ Route::get('/{any}', function () {
 
 Home: http://localhost:8000
 
-Login: http://localhost:8000/login
-
 404: http://localhost:8000/i-dont-exist
 
 ##### `routes/api_v1.php` 
