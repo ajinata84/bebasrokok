@@ -6,6 +6,14 @@ import ArticleRead from "@/components/ArticleRead/ArticleRead";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { getApiUrl } from "@/lib/constants";
 
 interface Article {
   id: number;
@@ -15,7 +23,7 @@ interface Article {
   thumbnail: string;
 }
 
-interface Testimony {
+export interface Testimony {
   id: number;
   created_at: string;
   user_id: number;
@@ -25,7 +33,18 @@ interface Testimony {
   age: number;
 }
 
-interface UserFetch {
+interface AllTestimony {
+  id: number;
+  created_at: string;
+  user_id: number;
+  content: string;
+  ai_feedback: string;
+  username: string;
+  age: number;
+  max_streak: number;
+}
+
+export interface UserFetch {
   username: string;
   streak_count: number;
   check_in_dates: string[];
@@ -43,7 +62,7 @@ export default function Home() {
 
   const [articles, setArticles] = useState<Article[]>([]);
 
-  const [testimonies, setTestimonies] = useState<Testimony[]>([]);
+  const [testimonies, setTestimonies] = useState<AllTestimony[]>([]);
 
   const [user, setUser] = useState<UserFetch>({
     username: "",
@@ -52,51 +71,25 @@ export default function Home() {
   });
 
   const fetchToken = {
-    'Authorization': 'Bearer ' + token
-  }
+    Authorization: "Bearer " + token,
+  };
+
+  const fetchUserData = async () => {
+    try {
+      const response = await axios.get(`${getApiUrl()}/getstreak`, {
+        headers: fetchToken,
+      });
+      setUser(response.data);
+    } catch (error) {
+      console.error("Error fetch:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const axres = await axios.get("http://localhost:8080/getstreak", {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        })
-
-        console.log(axres)
-        
-        // const response = await fetch("http://localhost:8080/getstreak", {
-        //   headers: fetchToken
-        // });
-        // if (response.ok) {
-        //   const data = await response.json();
-        //   setUser(data);
-        // } else {
-        //   console.error(
-        //     "Failed to fetch:",
-        //     response.status,
-        //     response.statusText
-        //   );
-        // }
-      } catch (error) {
-        console.error("Error fetch:", error);
-      }
-    };
-
     const fetchArticles = async () => {
       try {
-        const response = await fetch("http://localhost:8080/viewarticles");
-        if (response.ok) {
-          const data = await response.json();
-          setArticles(data);
-        } else {
-          console.error(
-            "Failed to fetch articles:",
-            response.status,
-            response.statusText
-          );
-        }
+        const response = await axios.get(`${getApiUrl()}/viewarticles`);
+        setArticles(response.data);
       } catch (error) {
         console.error("Error fetching articles:", error);
       }
@@ -104,17 +97,10 @@ export default function Home() {
 
     const fetchTestimonies = async () => {
       try {
-        const response = await fetch("http://localhost:8080/viewtestimonies");
-        if (response.ok) {
-          const data = await response.json();
-          setTestimonies(data);
-        } else {
-          console.error(
-            "Failed to fetch testimonies:",
-            response.status,
-            response.statusText
-          );
-        }
+        const response = await axios.get(
+          `${getApiUrl()}/viewtestimonies`
+        );
+        setTestimonies(response.data);
       } catch (error) {
         console.error("Error fetching testimonies:", error);
       }
@@ -126,15 +112,19 @@ export default function Home() {
 
     fetchArticles();
     fetchTestimonies();
-  }, []);
+  }, [token]);
 
   return (
     <main className="">
       <Layout>
         {/* MAIN COLUMNS */}
-        <CheckIn username={user.username} streak={user.streak_count} />
-        <InputForm />
-        <Streak />
+        {token && (
+          <>
+            <CheckIn user={user} refetchUser={fetchUserData} />
+            <InputForm />
+            <Streak streak={user.check_in_dates} maxcount={user.streak_count} />
+          </>
+        )}
         <div className="snap-start">
           <div className="flex flex-row w-full">
             <div className="w-[50%] h-[100vh] flex items-center py-20 justify-center sticky top-0">
@@ -203,16 +193,34 @@ export default function Home() {
           <div className="w-full ">
             <h1 className="text-4xl text-center my-8">Testimonials</h1>
             <div className="flex flex-row gap-6">
-              {testimonies.map((testimony, index) => (
-                <div key={index} className="flex flex-col w-full gap-6">
-                  <div className="p-6 bg-[#f3f6f5]">
-                    <span className="text-2xl ">
-                      {testimony.username}, {testimony.age} tahun
-                    </span>
-                    <p>{testimony.content}</p>
+              <TooltipProvider>
+                {testimonies.map((testimony, index) => (
+                  <div key={index} className="flex flex-col w-full gap-6">
+                    <div className="p-6 bg-[#f3f6f5] flex flex-col">
+                      <div className="flex flex-row">
+                        <span className="text-2xl">
+                          {testimony.username}, {testimony.age} tahun
+                        </span>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button size={"icon"} variant={"link"}>
+                              AI
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-80">
+                            <p>{testimony.ai_feedback}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <span className="text-xl my-4">
+                        Sudah tidak merokok sepanjang {testimony.max_streak}{" "}
+                        hari
+                      </span>
+                      <p>{testimony.content}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </TooltipProvider>
             </div>
           </div>
           {/* ARTICLES */}
@@ -236,6 +244,7 @@ export default function Home() {
             <div className="grid grid-cols-4 my-8 grid-flow-row gap-4">
               {articles.map((v, i) => (
                 <ArticleRead
+                  key={`ar${i}`}
                   article={{
                     imageUrl: v.thumbnail,
                     title: v.title,

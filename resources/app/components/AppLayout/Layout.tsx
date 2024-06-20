@@ -6,6 +6,7 @@ import {
   CircleUserRound,
   Info,
   LogIn,
+  LogOutIcon,
   MessageCircleMore,
   Newspaper,
 } from "lucide-react";
@@ -18,6 +19,7 @@ import {
 import SmokeCalculator from "../Calculator/SmokeCalculator";
 import AuthModal from "../AuthModal/AuthModal";
 import Cookies from "js-cookie";
+import LogOut from "../LogOutDialog/LogOut";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const token = Cookies.get("token");
@@ -42,16 +44,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </TooltipContent>
             </Tooltip>
           )}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button size={"icon"} variant={"default"}>
-                <CircleUserRound />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Akun</p>
-            </TooltipContent>
-          </Tooltip>
+          {token && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size={"icon"} variant={"default"}>
+                  <CircleUserRound />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Akun</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button size={"icon"} variant={"default"}>
@@ -106,6 +110,22 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <p>Kalkulator Pengeluaran Rokok</p>
             </TooltipContent>
           </Tooltip>
+          {token && (
+            <Tooltip>
+              <LogOut
+                ButtonTrigger={
+                  <TooltipTrigger asChild>
+                    <Button size={"icon"} variant={"destructive"}>
+                      <LogOutIcon />
+                    </Button>
+                  </TooltipTrigger>
+                }
+              />
+              <TooltipContent>
+                <p>Log Out</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
       </TooltipProvider>
       <div className="h-screen flex-col items-center justify-between  m-auto p-10 snap-y snap-mandatory overflow-y-scroll scroll-smooth">

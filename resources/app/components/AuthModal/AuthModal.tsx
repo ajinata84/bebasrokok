@@ -1,4 +1,3 @@
-import { z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +23,8 @@ import { toast } from "@/components/ui/use-toast";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
+import { z } from "zod";
+import { getApiUrl } from "@/lib/constants";
 
 // Define the login schema
 const loginSchema = z.object({
@@ -47,7 +48,6 @@ export default function AuthModal({
 }: {
   ButtonTrigger: React.ReactNode;
 }) {
-  const apiUrl = "localhost:8080";
 
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -71,8 +71,8 @@ export default function AuthModal({
     setLoading(true);
     try {
       const endpoint = isLogin
-        ? "http://localhost:8080/login"
-        : "http://localhost:8080/register";
+        ? `${getApiUrl()}/login`
+        : `${getApiUrl()}/register`;
       const response = await fetch(endpoint, {
         method: "POST",
         body: JSON.stringify(data),
@@ -93,6 +93,9 @@ export default function AuthModal({
           setIsLogin(!isLogin);
         }
         setLoading(false);
+        setTimeout(() => {
+          window.location.reload()
+        }, 1000)
       }
     } catch (error) {
       toast({
