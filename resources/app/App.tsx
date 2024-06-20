@@ -1,8 +1,6 @@
 import { RouterProvider } from 'react-router-dom';
 import router from "./router";
-import ToastNotifications from "@/components/ToastNotifications";
 import "../app/globals.css"
-
 
 function App() {
     return (
@@ -10,7 +8,6 @@ function App() {
             <RouterProvider
                 router={router}
             />
-            <ToastNotifications />
         </div>
     );
 }

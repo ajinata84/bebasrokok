@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 
 export default function RootLayout(props: { children?: ReactNode }) {
     return (
-        <main className="p-4">
+        <main className="">
             <Header />
             {props.children}
             <Outlet />
