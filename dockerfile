@@ -54,6 +54,7 @@ COPY . .
 
 # Expose port 80
 EXPOSE 5173
+EXPOSE 8000
 
 # Command to start Nginx
 CMD ["npm", "run", "dev"]
