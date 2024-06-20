@@ -55,4 +55,4 @@ EXPOSE 5173
 EXPOSE 8000
 
 # Command to start Nginx
-CMD ["npx", "vite"]
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
