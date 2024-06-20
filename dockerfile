@@ -49,12 +49,10 @@ RUN cp .env.example .env
 # Generate application key
 RUN php artisan key:generate
 
-# Copy the rest of the application code
-COPY . .
 
 # Expose port 80
 EXPOSE 5173
 EXPOSE 8000
 
 # Command to start Nginx
-CMD ["npm", "run", "dev"]
+CMD ["npx", "vite"]
