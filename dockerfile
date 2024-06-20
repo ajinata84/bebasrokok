@@ -43,6 +43,9 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 # Install Node.js dependencies
 RUN npm install
 
+# Copy the example environment file and set application key
+RUN cp .env.example .env
+
 # Generate application key
 RUN php artisan key:generate
 
