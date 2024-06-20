@@ -25,5 +25,5 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ vars.DOCKERHUB_USERNAME }}/me:${{ vars.VERSION }}
+        tags: ${{ vars.DOCKERHUB_USERNAME }}/bebasrokok-fe:${{ vars.VERSION }}
       
