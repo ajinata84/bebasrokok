@@ -31,8 +31,14 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy existing application directory contents
 COPY . /var/www
 
+# Change ownership of the working directory
+RUN chown -R www-data:www-data /var/www
+
+# Switch to the www-data user
+USER www-data
+
 # Install PHP dependencies
-RUN composer install
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # Install Node.js dependencies
 RUN npm install
@@ -43,13 +49,6 @@ RUN php artisan key:generate
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000
 CMD ["php-fpm"]
-
-# Add a new user to avoid running container as root
-RUN groupadd -g 1000 www
-RUN useradd -u 1000 -ms /bin/bash -g www www
-
-# Change current user to www
-USER www
 
 # Start the Laravel server
 CMD ["php", "artisan", "serve", "--host=0.0.0.0"]
