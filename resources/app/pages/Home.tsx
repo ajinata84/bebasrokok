@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { getApiUrl } from "@/lib/constants";
+import { AnimatePresence } from "framer-motion";
+import Preloader from "@/components/Preloader/Preloader";
 
 interface Article {
   id: number;
@@ -63,6 +65,7 @@ export default function Home() {
   const [articles, setArticles] = useState<Article[]>([]);
 
   const [testimonies, setTestimonies] = useState<AllTestimony[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [user, setUser] = useState<UserFetch>({
     username: "",
@@ -86,6 +89,7 @@ export default function Home() {
   };
 
   useEffect(() => {
+    setLoading(true);
     const fetchArticles = async () => {
       try {
         const response = await axios.get(`${getApiUrl()}/viewarticles`);
@@ -97,9 +101,7 @@ export default function Home() {
 
     const fetchTestimonies = async () => {
       try {
-        const response = await axios.get(
-          `${getApiUrl()}/viewtestimonies`
-        );
+        const response = await axios.get(`${getApiUrl()}/viewtestimonies`);
         setTestimonies(response.data);
       } catch (error) {
         console.error("Error fetching testimonies:", error);
@@ -109,13 +111,25 @@ export default function Home() {
     if (token) {
       fetchUserData();
     }
-
     fetchArticles();
     fetchTestimonies();
+    setLoading(false);
   }, [token]);
+
+  const splitIntoColumns = (
+    arr: AllTestimony[],
+    numCols: number
+  ): AllTestimony[][] => {
+    const cols: AllTestimony[][] = new Array(numCols).fill(null).map(() => []);
+    arr.forEach((item, i) => cols[i % numCols].push(item));
+    return cols;
+  };
+
+  const testimonyColumns = splitIntoColumns(testimonies, 3);
 
   return (
     <main className="">
+      <AnimatePresence mode="wait">{loading && <Preloader />}</AnimatePresence>
       <Layout>
         {/* MAIN COLUMNS */}
         {token && (
@@ -190,27 +204,33 @@ export default function Home() {
             </div>
           </div>
           {/* TESTIMONIALS */}
-          <div className="w-full ">
+          <div className="w-full">
             <h1 className="text-4xl text-center my-8">Testimonials</h1>
             <div className="flex flex-row gap-6">
-              <TooltipProvider>
-                {testimonies.map((testimony, index) => (
-                  <div key={index} className="flex flex-col w-full gap-6">
-                    <div className="p-6 bg-[#f3f6f5] flex flex-col">
-                      <div className="flex flex-row">
+              {testimonyColumns.map((column, colIndex) => (
+                <div key={colIndex} className="flex flex-col w-full gap-6">
+                  {column.map((testimony, index) => (
+                    <div key={index} className="p-6 bg-[#f3f6f5] flex flex-col">
+                      <div className="flex flex-row justify-between">
                         <span className="text-2xl">
                           {testimony.username}, {testimony.age} tahun
                         </span>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button size={"icon"} variant={"link"}>
-                              AI
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-80">
-                            <p>{testimony.ai_feedback}</p>
-                          </TooltipContent>
-                        </Tooltip>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size={"icon"}
+                                variant={"link"}
+                                className="text-[#0d3270] font-bold"
+                              >
+                                AI
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-80">
+                              <p>{testimony.ai_feedback}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
                       <span className="text-xl my-4">
                         Sudah tidak merokok sepanjang {testimony.max_streak}{" "}
@@ -218,9 +238,9 @@ export default function Home() {
                       </span>
                       <p>{testimony.content}</p>
                     </div>
-                  </div>
-                ))}
-              </TooltipProvider>
+                  ))}
+                </div>
+              ))}
             </div>
           </div>
           {/* ARTICLES */}
